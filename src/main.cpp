@@ -97,17 +97,23 @@ void setup() {
         request->send(SPIFFS, "/index.html", String(), false);
     });
 
-    server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(SPIFFS, "/style.css", "text/css");
+    server.on("/css/style.css", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(SPIFFS, "/css/style.css", "text/css");
     });
 
-    server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest *request) {
-        request->send(SPIFFS, "/script.js", "application/javascript");
+    server.on("/js/websocket.js", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(SPIFFS, "/js/websocket.js", "application/javascript");
     });
 
     // favicon.icoを提供
     server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(SPIFFS, "/favicon.ico", "image/x-icon");
+    });
+
+    // manifest.jsonを提供（PWA対応のため）
+    server.on("/manifest.json", HTTP_GET, [](AsyncWebServerRequest *request) {
+        logRequest(request);
+        request->send(SPIFFS, "/manifest.json", "application/json");
     });
 
     // GETリクエストハンドラ
