@@ -97,6 +97,11 @@ void setup() {
         request->send(SPIFFS, "/index.html", String(), false);
     });
 
+    // favicon.icoを提供
+    server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request) {
+        request->send(SPIFFS, "/favicon.ico", "image/x-icon");
+    });
+
     // GETリクエストハンドラ
     server.on("/get", HTTP_GET, [](AsyncWebServerRequest *request) {
         logRequest(request);
