@@ -5,14 +5,24 @@
     <title>ESP32 Web Server</title>
     <link rel="stylesheet" href="/css/style.css" />
     <link rel="manifest" href="/manifest.json" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
   </head>
   <body>
     <h1>カラーピッカーとRGB表示</h1>
     <input type="color" id="colorPicker" onchange="sendColor()" />
-    <!-- onchangeで色が選択された時にsendColor()が呼ばれる -->
     <p id="colorRGB"></p>
 
     <script src="/js/websocket.js"></script>
+    <script>
+      fetch("/color")
+        .then((response) => response.json())
+        .then((data) => {
+          const color = `#${((1 << 24) + (data.r << 16) + (data.g << 8) + data.b).toString(16).slice(1)}`;
+          document.getElementById("colorPicker").value = color;
+          document.getElementById("colorRGB").textContent =
+            `RGB: (${data.r}, ${data.g}, ${data.b})`;
+        })
+        .catch((error) => console.error("Error fetching color:", error));
+    </script>
   </body>
 </html>

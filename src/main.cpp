@@ -3,11 +3,14 @@
 #include <ArduinoJson.h>
 #include <AsyncWebSocket.h>
 #include <ESPAsyncWebServer.h>
+#include <Preferences.h>
 #include <SPIFFS.h>
 #include <WiFi.h>
 
 AsyncWebServer server(80);
 AsyncWebSocket ws("/ws");
+
+Preferences preferences;
 
 const char *PARAM_MESSAGE = "message";
 
@@ -51,6 +54,13 @@ void onWsEvent(AsyncWebSocket *server, AsyncWebSocketClient *client,
                     int g = data["g"];
                     int b = data["b"];
                     Serial.printf("RGB: (%d, %d, %d)\n", r, g, b);
+
+                    // 色値を保存
+                    preferences.begin("color", false);
+                    preferences.putInt("r", r);
+                    preferences.putInt("g", g);
+                    preferences.putInt("b", b);
+                    preferences.end();
                 }
             }
         }
@@ -114,6 +124,20 @@ void setup() {
     server.on("/manifest.json", HTTP_GET, [](AsyncWebServerRequest *request) {
         logRequest(request);
         request->send(SPIFFS, "/manifest.json", "application/json");
+    });
+
+    // 色値を取得するエンドポイント
+    server.on("/color", HTTP_GET, [](AsyncWebServerRequest *request) {
+        logRequest(request);
+        preferences.begin("color", true);
+        int r = preferences.getInt("r", 0);
+        int g = preferences.getInt("g", 0);
+        int b = preferences.getInt("b", 0);
+        preferences.end();
+
+        String json = "{\"r\":" + String(r) + ",\"g\":" + String(g) +
+                      ",\"b\":" + String(b) + "}";
+        request->send(200, "application/json", json);
     });
 
     // GETリクエストハンドラ
