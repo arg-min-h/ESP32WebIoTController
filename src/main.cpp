@@ -115,6 +115,12 @@ void setup() {
         request->send(SPIFFS, "/js/websocket.js", "application/javascript");
     });
 
+    server.on("/js/switch-theme.js", HTTP_GET,
+              [](AsyncWebServerRequest *request) {
+                  request->send(SPIFFS, "/js/switch-theme.js",
+                                "application/javascript");
+              });
+
     // favicon.icoを提供
     server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(SPIFFS, "/favicon.ico", "image/x-icon");

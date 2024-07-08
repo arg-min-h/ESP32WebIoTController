@@ -6,14 +6,34 @@
     <link rel="stylesheet" href="/css/style.css" />
     <link rel="manifest" href="/manifest.json" />
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <meta name="theme-color" content="#ffffff" />
+
+    <script>
+      // ページ読み込み時にシステムテーマを取得してbodyのクラスを設定する
+      document.addEventListener("DOMContentLoaded", function () {
+        const prefersDarkScheme = window.matchMedia(
+          "(prefers-color-scheme: dark)",
+        ).matches;
+        const body = document.body;
+        body.classList.toggle("dark-theme", prefersDarkScheme);
+        body.classList.toggle("light-theme", !prefersDarkScheme);
+        document
+          .querySelector('meta[name="theme-color"]')
+          .setAttribute("content", prefersDarkScheme ? "#333333" : "#ffffff");
+      });
+    </script>
   </head>
   <body>
     <h1>カラーピッカーとRGB表示</h1>
     <input type="color" id="colorPicker" onchange="sendColor()" />
     <p id="colorRGB"></p>
 
+    <button id="themeToggle">テーマ切り替え</button>
+
     <script src="/js/websocket.js"></script>
+    <script src="/js/switch-theme.js"></script>
     <script>
+      // WebSocketの設定や初期色の取得などは省略
       fetch("/color")
         .then((response) => response.json())
         .then((data) => {

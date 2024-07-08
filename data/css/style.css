@@ -1,3 +1,31 @@
+/* Light Theme */
+body.light-theme {
+  color: #333;
+  background-color: #ffffff;
+}
+
+.light-theme h1 {
+  color: #000000;
+}
+
+.light-theme #colorRGB {
+  color: #666666;
+}
+
+/* Dark Theme */
+body.dark-theme {
+  color: #fff;
+  background-color: #333333;
+}
+
+.dark-theme h1 {
+  color: #ffffff;
+}
+
+.dark-theme #colorRGB {
+  color: #cccccc;
+}
+
 /* Material Design CDN */
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons');
 @import url('https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css');
