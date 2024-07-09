@@ -121,6 +121,19 @@ void setup() {
                                 "application/javascript");
               });
 
+    // 追加した外部JavaScriptファイルのルートを処理するハンドラ
+    server.on("/js/theme-setup.js", HTTP_GET,
+              [](AsyncWebServerRequest *request) {
+                  request->send(SPIFFS, "/js/theme-setup.js",
+                                "application/javascript");
+              });
+
+    server.on("/js/color-setup.js", HTTP_GET,
+              [](AsyncWebServerRequest *request) {
+                  request->send(SPIFFS, "/js/color-setup.js",
+                                "application/javascript");
+              });
+
     // favicon.icoを提供
     server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(SPIFFS, "/favicon.ico", "image/x-icon");

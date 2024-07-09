@@ -7,21 +7,6 @@
     <link rel="manifest" href="/manifest.json" />
     <link rel="icon" href="/favicon.ico" type="image/x-icon" />
     <meta name="theme-color" content="#ffffff" />
-
-    <script>
-      // ページ読み込み時にシステムテーマを取得してbodyのクラスを設定する
-      document.addEventListener("DOMContentLoaded", function () {
-        const prefersDarkScheme = window.matchMedia(
-          "(prefers-color-scheme: dark)",
-        ).matches;
-        const body = document.body;
-        body.classList.toggle("dark-theme", prefersDarkScheme);
-        body.classList.toggle("light-theme", !prefersDarkScheme);
-        document
-          .querySelector('meta[name="theme-color"]')
-          .setAttribute("content", prefersDarkScheme ? "#333333" : "#ffffff");
-      });
-    </script>
   </head>
   <body>
     <h1>カラーピッカーとRGB表示</h1>
@@ -32,17 +17,8 @@
 
     <script src="/js/websocket.js"></script>
     <script src="/js/switch-theme.js"></script>
-    <script>
-      // WebSocketの設定や初期色の取得などは省略
-      fetch("/color")
-        .then((response) => response.json())
-        .then((data) => {
-          const color = `#${((1 << 24) + (data.r << 16) + (data.g << 8) + data.b).toString(16).slice(1)}`;
-          document.getElementById("colorPicker").value = color;
-          document.getElementById("colorRGB").textContent =
-            `RGB: (${data.r}, ${data.g}, ${data.b})`;
-        })
-        .catch((error) => console.error("Error fetching color:", error));
-    </script>
+    <script src="/js/service-worker.js"></script>
+    <script src="/js/theme-setup.js"></script>
+    <script src="/js/color-setup.js"></script>
   </body>
 </html>
