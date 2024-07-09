@@ -1,40 +1,26 @@
-function toggleTheme() {
-  const body = document.body;
-  if (body.classList.contains("light-theme")) {
-    body.classList.remove("light-theme");
-    body.classList.add("dark-theme");
-    document
-      .querySelector('meta[name="theme-color"]')
-      .setAttribute("content", "#333333");
-    saveThemePreference("dark");
-  } else {
-    body.classList.remove("dark-theme");
-    body.classList.add("light-theme");
-    document
-      .querySelector('meta[name="theme-color"]')
-      .setAttribute("content", "#ffffff");
-    saveThemePreference("light");
-  }
-}
+document.addEventListener("DOMContentLoaded", (event) => {
+  const themeToggleBtn = document.getElementById("theme-toggle");
+  const themeIcon = document.getElementById("theme-icon");
+  const currentTheme = localStorage.getItem("theme") || "light";
 
-function saveThemePreference(theme) {
-  localStorage.setItem("theme", theme);
-}
-
-document.addEventListener("DOMContentLoaded", function () {
-  const savedTheme = localStorage.getItem("theme");
-  const body = document.body;
-  if (savedTheme === "dark") {
-    body.classList.add("dark-theme");
-    document
-      .querySelector('meta[name="theme-color"]')
-      .setAttribute("content", "#333333");
+  if (currentTheme === "dark") {
+    document.body.classList.add("dark");
+    themeIcon.classList.replace("fa-sun", "fa-moon");
   } else {
-    body.classList.add("light-theme");
-    document
-      .querySelector('meta[name="theme-color"]')
-      .setAttribute("content", "#ffffff");
+    document.body.classList.add("light");
+    themeIcon.classList.replace("fa-moon", "fa-sun");
   }
 
-  document.getElementById("themeToggle").addEventListener("click", toggleTheme);
+  themeToggleBtn.addEventListener("click", () => {
+    document.body.classList.toggle("dark");
+    document.body.classList.toggle("light");
+
+    if (document.body.classList.contains("dark")) {
+      themeIcon.classList.replace("fa-sun", "fa-moon");
+      localStorage.setItem("theme", "dark");
+    } else {
+      themeIcon.classList.replace("fa-moon", "fa-sun");
+      localStorage.setItem("theme", "light");
+    }
+  });
 });

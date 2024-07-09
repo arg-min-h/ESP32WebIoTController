@@ -134,6 +134,12 @@ void setup() {
                                 "application/javascript");
               });
 
+    server.on("/js/service-worker.js", HTTP_GET,
+              [](AsyncWebServerRequest *request) {
+                  request->send(SPIFFS, "/js/service-worker.js",
+                                "application/javascript");
+              });
+
     // favicon.icoを提供
     server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request) {
         request->send(SPIFFS, "/favicon.ico", "image/x-icon");

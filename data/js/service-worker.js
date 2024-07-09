@@ -6,6 +6,8 @@ const cacheFiles = [
   "/",
   "/index.html",
   "/js/websocket.js",
+  "/js/color-setup.js",
+  "/js/theme-setup.js",
   "/css/style.css",
   "/favicon.ico",
 ];
