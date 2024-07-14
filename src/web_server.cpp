@@ -1,5 +1,6 @@
 #include "web_server.h"
 #include "color_preferences.h"
+#include "tcp_server.h" // TCPサーバーのヘッダーをインクルード
 #include <ESPAsyncWebServer.h>
 #include <SPIFFS.h>
 
@@ -119,12 +120,16 @@ void setupWebServer() {
 
 // リクエストのログを記録する関数
 void logRequest(AsyncWebServerRequest *request) {
-    Serial.printf("HTTP %s request to %s\n", request->methodToString(),
-                  request->url().c_str());
+    String logMessage = "HTTP " + String(request->methodToString()) +
+                        " request to " + request->url();
+    Serial.println(logMessage);
+    sendTcpLog((logMessage + "\r\n").c_str());
 }
 
 // 404エラーハンドラ
 void notFound(AsyncWebServerRequest *request) {
-    Serial.printf("NOT FOUND: %s\n", request->url().c_str());
+    String logMessage = "NOT FOUND: " + request->url();
+    Serial.println(logMessage);
+    sendTcpLog((logMessage + "\r\n").c_str());
     request->send(404, "text/plain", "Not found");
 }

@@ -1,3 +1,4 @@
+#include "tcp_server.h" // TCPサーバーのヘッダーをインクルード
 #include <ArduinoOTA.h>
 
 void setupOTA() {
@@ -9,26 +10,49 @@ void setupOTA() {
         } else { // U_SPIFFS
             type = "filesystem";
         }
-        Serial.println("Start updating " + type);
+        String logMessage = "Start updating " + type + "\r\n";
+        Serial.print(logMessage);
+        sendTcpLog(logMessage.c_str());
     });
-    ArduinoOTA.onEnd([]() { Serial.println("\nEnd"); });
+    ArduinoOTA.onEnd([]() {
+        String logMessage = "\nEnd\r\n";
+        Serial.print(logMessage);
+        sendTcpLog(logMessage.c_str());
+    });
     ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
-        Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+        String logMessage =
+            "Progress: " + String((progress / (total / 100))) + "%\r\n";
+        Serial.print(logMessage);
+        sendTcpLog(logMessage.c_str());
     });
     ArduinoOTA.onError([](ota_error_t error) {
-        Serial.printf("Error[%u]: ", error);
+        String logMessage = "Error[" + String(error) + "]: ";
+        Serial.print(logMessage);
+        sendTcpLog(logMessage.c_str());
         if (error == OTA_AUTH_ERROR) {
-            Serial.println("Auth Failed");
+            logMessage = "Auth Failed\r\n";
+            Serial.print(logMessage);
+            sendTcpLog(logMessage.c_str());
         } else if (error == OTA_BEGIN_ERROR) {
-            Serial.println("Begin Failed");
+            logMessage = "Begin Failed\r\n";
+            Serial.print(logMessage);
+            sendTcpLog(logMessage.c_str());
         } else if (error == OTA_CONNECT_ERROR) {
-            Serial.println("Connect Failed");
+            logMessage = "Connect Failed\r\n";
+            Serial.print(logMessage);
+            sendTcpLog(logMessage.c_str());
         } else if (error == OTA_RECEIVE_ERROR) {
-            Serial.println("Receive Failed");
+            logMessage = "Receive Failed\r\n";
+            Serial.print(logMessage);
+            sendTcpLog(logMessage.c_str());
         } else if (error == OTA_END_ERROR) {
-            Serial.println("End Failed");
+            logMessage = "End Failed\r\n";
+            Serial.print(logMessage);
+            sendTcpLog(logMessage.c_str());
         }
     });
     ArduinoOTA.begin();
-    Serial.println("OTA Ready");
+    String logMessage = "OTA Ready\r\n";
+    Serial.print(logMessage);
+    sendTcpLog(logMessage.c_str());
 }

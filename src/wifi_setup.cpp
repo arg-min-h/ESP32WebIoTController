@@ -1,4 +1,5 @@
 #include "credentials.h" // SSIDとパスワードを含むファイル
+#include "tcp_server.h"  // TCPサーバーのヘッダーをインクルード
 #include <WiFi.h>
 
 void setupWiFi() {
@@ -10,16 +11,21 @@ void setupWiFi() {
     IPAddress secondaryDNS(8, 8, 4, 4); // オプション: セカンダリDNSサーバー
 
     if (!WiFi.config(local_IP, gateway, subnet, primaryDNS, secondaryDNS)) {
-        Serial.println("STA Failed to configure");
+        String logMessage = "STA Failed to configure\r\n";
+        Serial.print(logMessage);
+        sendTcpLog(logMessage.c_str());
     }
 
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password);
     if (WiFi.waitForConnectResult() != WL_CONNECTED) {
-        Serial.printf("WiFi Failed!\n");
+        String logMessage = "WiFi Failed!\r\n";
+        Serial.print(logMessage);
+        sendTcpLog(logMessage.c_str());
         return;
     }
 
-    Serial.print("IP Address: ");
-    Serial.println(WiFi.localIP());
+    String logMessage = "IP Address: " + WiFi.localIP().toString() + "\r\n";
+    Serial.print(logMessage);
+    sendTcpLog(logMessage.c_str());
 }
