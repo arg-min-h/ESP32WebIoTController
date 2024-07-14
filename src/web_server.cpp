@@ -3,6 +3,7 @@
 #include "tcp_server.h" // TCPサーバーのヘッダーをインクルード
 #include <ESPAsyncWebServer.h>
 #include <SPIFFS.h>
+#include <esp_system.h> // ESP32のリセット関数を使用するために必要
 
 // Webサーバーのインスタンスを作成し、ポート80でリッスン
 AsyncWebServer server(80);
@@ -109,6 +110,23 @@ void setupWebServer() {
         }
         // レスポンスを送信
         request->send(200, "text/plain", "Hello, POST: " + message);
+    });
+
+    // リセットエンドポイント
+    server.on("/reset", HTTP_GET, [](AsyncWebServerRequest *request) {
+        String logMessage = "Received reset command, rebooting...\r\n";
+        Serial.print(logMessage);
+        sendTcpLog(logMessage.c_str());
+        request->send(200, "text/html",
+                      "<html><body><script>setTimeout(function() { "
+                      "window.location.href = '/'; }, 5000);</script><p>ESP32 "
+                      "is resetting...</p></body></html>");
+        delay(1000);
+        sendTcpLog("Connection closing for reset...\r\n");
+        delay(500);
+        tcpClient.stop(); // クライアントを明示的に切断
+        delay(500);
+        ESP.restart();
     });
 
     // 未処理のリクエストに対する404ハンドラ
