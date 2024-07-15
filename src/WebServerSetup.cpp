@@ -1,20 +1,17 @@
-#include "web_server.h"
-#include "color_preferences.h"
-#include "tcp_server.h" // TCPサーバーのヘッダーをインクルード
-#include <ESPAsyncWebServer.h>
-#include <SPIFFS.h>
+#include "WebServerSetup.h"
+#include "ColorPreferences.h"
+#include "SPIFFS.h"
 #include <esp_system.h> // ESP32のリセット関数を使用するために必要
 
-// Webサーバーのインスタンスを作成し、ポート80でリッスン
-AsyncWebServer server(80);
-
-// メッセージパラメータの定義
 const char *PARAM_MESSAGE = "message";
 
-// Webサーバーのセットアップ
-void setupWebServer() {
+WebServerSetup::WebServerSetup() : server(80), tcpServerHandler(nullptr) {}
+
+void WebServerSetup::begin(TCPServerHandler *tcpHandler) {
+    tcpServerHandler = tcpHandler;
+
     // ルートURL（"/"）にアクセスがあった場合、index.htmlを提供
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    server.on("/", HTTP_GET, [this](AsyncWebServerRequest *request) {
         logRequest(request); // リクエストのログを記録
         request->send(SPIFFS, "/index.html", String(), false);
     });
@@ -63,20 +60,18 @@ void setupWebServer() {
     });
 
     // manifest.jsonを提供（PWA対応のため）
-    server.on("/manifest.json", HTTP_GET, [](AsyncWebServerRequest *request) {
-        logRequest(request); // リクエストのログを記録
-        request->send(SPIFFS, "/manifest.json", "application/json");
-    });
+    server.on("/manifest.json", HTTP_GET,
+              [this](AsyncWebServerRequest *request) {
+                  logRequest(request); // リクエストのログを記録
+                  request->send(SPIFFS, "/manifest.json", "application/json");
+              });
 
     // 色値を取得するエンドポイント
-    server.on("/color", HTTP_GET, [](AsyncWebServerRequest *request) {
+    server.on("/color", HTTP_GET, [this](AsyncWebServerRequest *request) {
         logRequest(request); // リクエストのログを記録
-        preferences.begin("color",
-                          true); // "color" 名前空間でプリファレンスを開く
-        int r = preferences.getInt("r", 0);
-        int g = preferences.getInt("g", 0);
-        int b = preferences.getInt("b", 0);
-        preferences.end();
+        ColorPreferences colorPreferences;
+        int r, g, b;
+        colorPreferences.getColor(r, g, b);
 
         // 色値をJSON形式でレスポンス
         String json = "{\"r\":" + String(r) + ",\"g\":" + String(g) +
@@ -85,7 +80,7 @@ void setupWebServer() {
     });
 
     // GETリクエストのハンドラ
-    server.on("/get", HTTP_GET, [](AsyncWebServerRequest *request) {
+    server.on("/get", HTTP_GET, [this](AsyncWebServerRequest *request) {
         logRequest(request); // リクエストのログを記録
         String message;
         // "message" パラメータがある場合、その値を取得
@@ -99,7 +94,7 @@ void setupWebServer() {
     });
 
     // POSTリクエストのハンドラ
-    server.on("/post", HTTP_POST, [](AsyncWebServerRequest *request) {
+    server.on("/post", HTTP_POST, [this](AsyncWebServerRequest *request) {
         logRequest(request); // リクエストのログを記録
         String message;
         // "message" パラメータがある場合、その値を取得
@@ -113,41 +108,43 @@ void setupWebServer() {
     });
 
     // リセットエンドポイント
-    server.on("/reset", HTTP_GET, [](AsyncWebServerRequest *request) {
+    server.on("/reset", HTTP_GET, [this](AsyncWebServerRequest *request) {
         String logMessage = "Received reset command, rebooting...\r\n";
         Serial.print(logMessage);
-        sendTcpLog(logMessage.c_str());
+        tcpServerHandler->sendLog(logMessage.c_str());
         request->send(200, "text/html",
                       "<html><body><script>setTimeout(function() { "
                       "window.location.href = '/'; }, 5000);</script><p>ESP32 "
                       "is resetting...</p></body></html>");
         delay(1000);
-        sendTcpLog("Connection closing for reset...\r\n");
+        tcpServerHandler->sendLog("Connection closing for reset...\r\n");
         delay(500);
-        tcpClient.stop(); // クライアントを明示的に切断
+        tcpServerHandler->client.stop(); // クライアントを明示的に切断
         delay(500);
         ESP.restart();
     });
 
     // 未処理のリクエストに対する404ハンドラ
-    server.onNotFound(notFound);
+    server.onNotFound([this](AsyncWebServerRequest *request) {
+        notFound(request); // リクエストのログを記録
+    });
 
     // Webサーバーを開始
     server.begin();
 }
 
 // リクエストのログを記録する関数
-void logRequest(AsyncWebServerRequest *request) {
+void WebServerSetup::logRequest(AsyncWebServerRequest *request) {
     String logMessage = "HTTP " + String(request->methodToString()) +
                         " request to " + request->url();
     Serial.println(logMessage);
-    sendTcpLog((logMessage + "\r\n").c_str());
+    tcpServerHandler->sendLog((logMessage + "\r\n").c_str());
 }
 
 // 404エラーハンドラ
-void notFound(AsyncWebServerRequest *request) {
+void WebServerSetup::notFound(AsyncWebServerRequest *request) {
     String logMessage = "NOT FOUND: " + request->url();
     Serial.println(logMessage);
-    sendTcpLog((logMessage + "\r\n").c_str());
+    tcpServerHandler->sendLog((logMessage + "\r\n").c_str());
     request->send(404, "text/plain", "Not found");
 }
