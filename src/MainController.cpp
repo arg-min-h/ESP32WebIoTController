@@ -1,6 +1,7 @@
 #include "MainController.h"
 
-MainController::MainController() {}
+MainController::MainController()
+    : ledController(25, 26, 27) {} // ここで使用するピン番号を指定
 
 void MainController::setup() {
     Serial.begin(115200);
@@ -26,6 +27,9 @@ void MainController::setup() {
     // WebSocketのセットアップ
     webSocketHandler.begin(&webServerSetup.server, &tcpServerHandler);
 
+    // LEDコントローラの初期化
+    ledController.begin();
+
     String logMessage = "Setup completed\r\n";
     Serial.print(logMessage);
     tcpServerHandler.sendLog(logMessage.c_str());
@@ -36,4 +40,8 @@ void MainController::loop() {
     webSocketHandler
         .cleanupClients(); // WebSocketのクライアントをクリーンアップ
     tcpServerHandler.handleClient(); // TCPクライアントの処理
+}
+
+void MainController::setColor(int r, int g, int b) {
+    ledController.setColor(r, g, b);
 }

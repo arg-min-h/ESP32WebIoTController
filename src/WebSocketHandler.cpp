@@ -1,6 +1,9 @@
 #include "WebSocketHandler.h"
 #include "ColorPreferences.h"
+#include "MainController.h"
 #include <ArduinoJson.h>
+
+extern MainController mainController; // MainControllerのインスタンスを取得
 
 WebSocketHandler::WebSocketHandler() : ws("/ws"), tcpServerHandler(nullptr) {}
 
@@ -68,6 +71,9 @@ void WebSocketHandler::onWsEvent(AsyncWebSocket *server,
                     // 色値を保存
                     ColorPreferences colorPreferences;
                     colorPreferences.saveColor(r, g, b);
+
+                    // LEDの色を設定
+                    mainController.setColor(r, g, b);
                 }
             }
         }
