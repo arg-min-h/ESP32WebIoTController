@@ -1,7 +1,7 @@
 #include "MainController.h"
+#include "ColorPreferences.h" // ColorPreferencesをインクルード
 
-MainController::MainController()
-    : ledController(25, 26, 27) {} // ここで使用するピン番号を指定
+MainController::MainController() : ledController() {}
 
 void MainController::setup() {
     Serial.begin(115200);
@@ -30,6 +30,12 @@ void MainController::setup() {
     // LEDコントローラの初期化
     ledController.begin();
 
+    // 初期色を設定
+    ColorPreferences colorPreferences;
+    int r, g, b;
+    colorPreferences.getColor(r, g, b);
+    ledController.setColor(r, g, b); // 遷移なしで初期色を設定
+
     String logMessage = "Setup completed\r\n";
     Serial.print(logMessage);
     tcpServerHandler.sendLog(logMessage.c_str());
@@ -40,6 +46,7 @@ void MainController::loop() {
     webSocketHandler
         .cleanupClients(); // WebSocketのクライアントをクリーンアップ
     tcpServerHandler.handleClient(); // TCPクライアントの処理
+    ledController.update();          // LEDの更新
 }
 
 void MainController::setColor(int r, int g, int b) {

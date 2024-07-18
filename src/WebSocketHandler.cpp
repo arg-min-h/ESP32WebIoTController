@@ -1,5 +1,6 @@
 #include "WebSocketHandler.h"
 #include "ColorPreferences.h"
+#include "LEDConfig.h" // LEDConfig.hをインクルードしてTRANSITION_TIMEを使用
 #include "MainController.h"
 #include <ArduinoJson.h>
 
@@ -73,7 +74,7 @@ void WebSocketHandler::onWsEvent(AsyncWebSocket *server,
                     colorPreferences.saveColor(r, g, b);
 
                     // LEDの色を設定
-                    mainController.setColor(r, g, b);
+                    mainController.setColor(r, g, b); // 3つの引数を渡す
                 }
             }
         }
