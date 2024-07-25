@@ -4,7 +4,7 @@
 LEDPWMController::LEDPWMController()
     : _redPin(RED_PIN), _greenPin(GREEN_PIN), _bluePin(BLUE_PIN), _currentR(0),
       _currentG(0), _currentB(0), _targetR(0), _targetG(0), _targetB(0),
-      _transitioning(false) {}
+      _transitioning(false), _lastUpdateTime(0) {}
 
 void LEDPWMController::begin() {
     pinMode(_redPin, OUTPUT);
@@ -12,35 +12,51 @@ void LEDPWMController::begin() {
     pinMode(_bluePin, OUTPUT);
 }
 
-void LEDPWMController::setColor(int r, int g, int b) {
+void LEDPWMController::setColor(float r, float g, float b, float speed) {
     _targetR = r;
     _targetG = g;
     _targetB = b;
-    _startTime = millis();
     _transitioning = true;
+    _transitionSpeed = speed; // 速度を設定
 }
 
 void LEDPWMController::update() {
-    if (_transitioning) {
-        unsigned long now = millis();
-        unsigned long elapsed = now - _startTime;
+    unsigned long currentTime = millis();
+    float deltaTime = (float)(currentTime - _lastUpdateTime) / 1000.0; // 秒単位
+    _lastUpdateTime = currentTime;
 
-        if (elapsed >= TRANSITION_TIME) {
-            // 遷移が完了した場合、目標の色に設定
+    // 遷移速度 (例: 1秒あたりの変化量)
+    // float speed = 1000.0; // ここで速度を設定
+    float speed = _transitionSpeed;
+
+    if (_currentR != _targetR) {
+        float change = speed * deltaTime;
+        if (abs(_targetR - _currentR) <= change) {
             _currentR = _targetR;
-            _currentG = _targetG;
-            _currentB = _targetB;
-            _transitioning = false;
         } else {
-            // 線形補間
-            float progress = (float)elapsed / TRANSITION_TIME;
-            int newR = _currentR + progress * (_targetR - _currentR);
-            int newG = _currentG + progress * (_targetG - _currentG);
-            int newB = _currentB + progress * (_targetB - _currentB);
-
-            analogWrite(_redPin, newR);
-            analogWrite(_greenPin, newG);
-            analogWrite(_bluePin, newB);
+            _currentR += (_targetR > _currentR ? change : -change);
         }
     }
+
+    if (_currentG != _targetG) {
+        float change = speed * deltaTime;
+        if (abs(_targetG - _currentG) <= change) {
+            _currentG = _targetG;
+        } else {
+            _currentG += (_targetG > _currentG ? change : -change);
+        }
+    }
+
+    if (_currentB != _targetB) {
+        float change = speed * deltaTime;
+        if (abs(_targetB - _currentB) <= change) {
+            _currentB = _targetB;
+        } else {
+            _currentB += (_targetB > _currentB ? change : -change);
+        }
+    }
+
+    analogWrite(_redPin, _currentR);
+    analogWrite(_greenPin, _currentG);
+    analogWrite(_bluePin, _currentB);
 }

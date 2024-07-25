@@ -8,28 +8,19 @@ class LEDPWMController {
   public:
     LEDPWMController();
     void begin();
-    void setColor(int r, int g, int b);
     void update();
+    void setColor(float r, float g, float b, float speed);
 
   private:
-    int _redPin;
-    int _greenPin;
-    int _bluePin;
+    unsigned long _lastUpdateTime;
+    float _currentR, _currentG, _currentB;
+    float _targetR, _targetG, _targetB;
+    bool _transitioning;
+    float _startR, _startG, _startB;
+    float _transitionDuration;
+    float _transitionSpeed;
 
-    // 現在の色
-    int _currentR;
-    int _currentG;
-    int _currentB;
-
-    // 目標の色
-    int _targetR;
-    int _targetG;
-    int _targetB;
-
-    // 色遷移のための変数
-    unsigned long _startTime;
-    unsigned long _transitionTime;
-    bool _transitioning; // 色遷移中かどうか
+    int _redPin, _greenPin, _bluePin;
 };
 
 #endif // LED_PWM_CONTROLLER_H

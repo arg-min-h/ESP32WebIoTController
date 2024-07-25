@@ -26,3 +26,18 @@ void ColorPreferences::begin(bool readOnly) {
 }
 
 void ColorPreferences::end() { preferences.end(); }
+
+void ColorPreferences::saveSpeed(float speed) { // 追加
+    preferences.begin("settings", false);
+    preferences.putInt("speed",
+                       static_cast<int>(speed)); // float を int に変換して保存
+    preferences.end();
+}
+
+float ColorPreferences::getSpeed() { // 追加
+    preferences.begin("settings", true);
+    float speed = static_cast<float>(
+        preferences.getInt("speed", 50)); // デフォルト速度を50.0とする
+    preferences.end();
+    return speed;
+}

@@ -14,7 +14,7 @@ class MainController {
     MainController();
     void setup();
     void loop();
-    void setColor(int r, int g, int b); // パラメータを修正
+    void setColor(int r, int g, int b, float speed);
 
   private:
     WiFiSetup wifiSetup;

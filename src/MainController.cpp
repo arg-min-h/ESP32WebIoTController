@@ -30,11 +30,13 @@ void MainController::setup() {
     // LEDコントローラの初期化
     ledController.begin();
 
-    // 初期色を設定
+    // 初期色と速度を設定
     ColorPreferences colorPreferences;
     int r, g, b;
+    float speed;
     colorPreferences.getColor(r, g, b);
-    ledController.setColor(r, g, b); // 遷移なしで初期色を設定
+    speed = colorPreferences.getSpeed();
+    ledController.setColor(r, g, b, speed);
 
     String logMessage = "Setup completed\r\n";
     Serial.print(logMessage);
@@ -49,6 +51,8 @@ void MainController::loop() {
     ledController.update();          // LEDの更新
 }
 
-void MainController::setColor(int r, int g, int b) {
-    ledController.setColor(r, g, b);
+void MainController::setColor(int r, int g, int b, float speed) {
+    ledController.setColor(r, g, b, speed);
+    ColorPreferences colorPreferences;
+    colorPreferences.saveSpeed(speed); // 速度を保存
 }

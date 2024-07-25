@@ -21,7 +21,6 @@ void WebSocketHandler::begin(AsyncWebServer *server,
 void WebSocketHandler::cleanupClients() {
     ws.cleanupClients(); // クライアントのクリーンアップ処理
 }
-
 void WebSocketHandler::onWsEvent(AsyncWebSocket *server,
                                  AsyncWebSocketClient *client,
                                  AwsEventType type, void *arg, uint8_t *data,
@@ -31,6 +30,25 @@ void WebSocketHandler::onWsEvent(AsyncWebSocket *server,
                             client->remoteIP().toString() + "\r\n";
         Serial.print(logMessage);
         tcpServerHandler->sendLog(logMessage.c_str());
+
+        // 接続時に現在の色と速度を送信
+        ColorPreferences colorPreferences;
+        int r, g, b;
+        float speed;
+        colorPreferences.getColor(r, g, b);
+        speed = colorPreferences.getSpeed();
+
+        StaticJsonDocument<200> doc;
+        doc["type"] = "initial";
+        doc["data"]["r"] = r;
+        doc["data"]["g"] = g;
+        doc["data"]["b"] = b;
+        doc["data"]["speed"] = speed;
+
+        String message;
+        serializeJson(doc, message);
+        client->text(message);
+
     } else if (type == WS_EVT_DISCONNECT) {
         String logMessage = "Client disconnected\r\n";
         Serial.print(logMessage);
@@ -64,17 +82,21 @@ void WebSocketHandler::onWsEvent(AsyncWebSocket *server,
                     int r = data["r"];
                     int g = data["g"];
                     int b = data["b"];
+                    float speed = data["speed"];
                     logMessage = "RGB: (" + String(r) + ", " + String(g) +
-                                 ", " + String(b) + ")\r\n";
+                                 ", " + String(b) +
+                                 "), Speed: " + String(speed) + "\r\n";
                     Serial.print(logMessage);
                     tcpServerHandler->sendLog(logMessage.c_str());
 
                     // 色値を保存
                     ColorPreferences colorPreferences;
                     colorPreferences.saveColor(r, g, b);
+                    colorPreferences.saveSpeed(speed); // 速度を保存
 
                     // LEDの色を設定
-                    mainController.setColor(r, g, b); // 3つの引数を渡す
+                    mainController.setColor(r, g, b,
+                                            speed); // 速度を追加して渡す
                 }
             }
         }

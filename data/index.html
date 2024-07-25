@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1.0 maximum-scale=1.0, user-scalable=no"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
     />
     <title>ESP32 Web Server</title>
     <link rel="stylesheet" href="/css/style.css" />
@@ -25,6 +25,12 @@
       <h2>カラーピッカーとRGB表示</h2>
       <input type="color" id="colorPicker" onchange="sendColor()" />
       <p id="colorRGB"></p>
+
+      <h2>速度調整</h2>
+      <select id="speedDropdown" onchange="updateSpeed()">
+        <!-- オプションはJavaScriptで追加します -->
+      </select>
+      <p id="speedValue">速度: 100</p>
     </div>
     <script src="/js/websocket.js"></script>
     <script src="/js/switch-theme.js"></script>
