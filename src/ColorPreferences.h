@@ -6,8 +6,12 @@ class ColorPreferences {
     ColorPreferences();
     void saveColor(int r, int g, int b);
     void getColor(int &r, int &g, int &b);
-    void saveSpeed(float speed); // 追加
-    float getSpeed();            // 追加
+    void saveSpeed(float speed);
+    float getSpeed();
+    void saveBrightnessCorrection(float redCorrection, float greenCorrection,
+                                  float blueCorrection);
+    void getBrightnessCorrection(float &redCorrection, float &greenCorrection,
+                                 float &blueCorrection);
 
   private:
     void begin(bool readOnly);

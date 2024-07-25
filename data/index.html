@@ -16,6 +16,44 @@
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
     />
+    <style>
+      /* ナンバーピッカーのスタイルを追加 */
+      .number-picker-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .number-picker {
+        width: 60px;
+        height: 40px;
+        font-size: 18px;
+        text-align: center;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: var(--primary-background-color);
+        color: var(--primary-text-color);
+      }
+
+      .number-picker-button {
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        background-color: var(--primary-background-color);
+        color: var(--primary-text-color);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+      }
+
+      .number-picker-button:active {
+        background-color: #ccc;
+      }
+    </style>
   </head>
   <body>
     <div class="container">
@@ -31,10 +69,93 @@
         <!-- オプションはJavaScriptで追加します -->
       </select>
       <p id="speedValue">速度: 100</p>
+
+      <h2>輝度補正</h2>
+      <div class="number-picker-container">
+        <button
+          class="number-picker-button"
+          onclick="changeValue('redCorrection', -1)"
+        >
+          -
+        </button>
+        <input
+          type="number"
+          id="redCorrection"
+          class="number-picker"
+          value="255"
+          step="1"
+          min="0"
+          max="255"
+          onchange="sendBrightnessCorrection()"
+        />
+        <button
+          class="number-picker-button"
+          onclick="changeValue('redCorrection', 1)"
+        >
+          +
+        </button>
+      </div>
+      <div class="number-picker-container">
+        <button
+          class="number-picker-button"
+          onclick="changeValue('greenCorrection', -1)"
+        >
+          -
+        </button>
+        <input
+          type="number"
+          id="greenCorrection"
+          class="number-picker"
+          value="255"
+          step="1"
+          min="0"
+          max="255"
+          onchange="sendBrightnessCorrection()"
+        />
+        <button
+          class="number-picker-button"
+          onclick="changeValue('greenCorrection', 1)"
+        >
+          +
+        </button>
+      </div>
+      <div class="number-picker-container">
+        <button
+          class="number-picker-button"
+          onclick="changeValue('blueCorrection', -1)"
+        >
+          -
+        </button>
+        <input
+          type="number"
+          id="blueCorrection"
+          class="number-picker"
+          value="255"
+          step="1"
+          min="0"
+          max="255"
+          onchange="sendBrightnessCorrection()"
+        />
+        <button
+          class="number-picker-button"
+          onclick="changeValue('blueCorrection', 1)"
+        >
+          +
+        </button>
+      </div>
     </div>
     <script src="/js/websocket.js"></script>
     <script src="/js/switch-theme.js"></script>
     <script src="/js/color-setup.js"></script>
     <script src="js/theme-setup.js"></script>
+    <script>
+      function changeValue(elementId, delta) {
+        const element = document.getElementById(elementId);
+        let value = parseInt(element.value);
+        value = Math.max(0, Math.min(255, value + delta));
+        element.value = value;
+        sendBrightnessCorrection();
+      }
+    </script>
   </body>
 </html>

@@ -15,6 +15,9 @@ class MainController {
     void setup();
     void loop();
     void setColor(int r, int g, int b, float speed);
+    void
+    setBrightnessCorrection(float redCorrection, float greenCorrection,
+                            float blueCorrection); // 輝度補正の設定メソッド
 
   private:
     WiFiSetup wifiSetup;

@@ -1,6 +1,6 @@
 #include "WebSocketHandler.h"
 #include "ColorPreferences.h"
-#include "LEDConfig.h" // LEDConfig.hをインクルードしてTRANSITION_TIMEを使用
+#include "LEDConfig.h"
 #include "MainController.h"
 #include <ArduinoJson.h>
 
@@ -21,6 +21,7 @@ void WebSocketHandler::begin(AsyncWebServer *server,
 void WebSocketHandler::cleanupClients() {
     ws.cleanupClients(); // クライアントのクリーンアップ処理
 }
+
 void WebSocketHandler::onWsEvent(AsyncWebSocket *server,
                                  AsyncWebSocketClient *client,
                                  AwsEventType type, void *arg, uint8_t *data,
@@ -31,19 +32,25 @@ void WebSocketHandler::onWsEvent(AsyncWebSocket *server,
         Serial.print(logMessage);
         tcpServerHandler->sendLog(logMessage.c_str());
 
-        // 接続時に現在の色と速度を送信
+        // 接続時に現在の色、速度、輝度補正値を送信
         ColorPreferences colorPreferences;
         int r, g, b;
         float speed;
+        float redCorrection, greenCorrection, blueCorrection;
         colorPreferences.getColor(r, g, b);
         speed = colorPreferences.getSpeed();
+        colorPreferences.getBrightnessCorrection(redCorrection, greenCorrection,
+                                                 blueCorrection);
 
-        StaticJsonDocument<200> doc;
+        DynamicJsonDocument doc(256);
         doc["type"] = "initial";
         doc["data"]["r"] = r;
         doc["data"]["g"] = g;
         doc["data"]["b"] = b;
         doc["data"]["speed"] = speed;
+        doc["data"]["redCorrection"] = redCorrection;
+        doc["data"]["greenCorrection"] = greenCorrection;
+        doc["data"]["blueCorrection"] = blueCorrection;
 
         String message;
         serializeJson(doc, message);
@@ -56,15 +63,12 @@ void WebSocketHandler::onWsEvent(AsyncWebSocket *server,
     } else if (type == WS_EVT_DATA) {
         AwsFrameInfo *info = (AwsFrameInfo *)arg;
         if (info->opcode == WS_TEXT) {
-            // UTF-8としてデコードする
             String msg = String((char *)data).substring(0, len);
             String logMessage = "Received message: " + msg + "\r\n";
             Serial.print(logMessage);
             tcpServerHandler->sendLog(logMessage.c_str());
 
-            // ArduinoJsonのJsonDocumentを使用する
-            const size_t capacity = 1024;
-            StaticJsonDocument<capacity> doc;
+            DynamicJsonDocument doc(1024);
             DeserializationError error = deserializeJson(doc, msg);
             if (error) {
                 logMessage =
@@ -92,11 +96,36 @@ void WebSocketHandler::onWsEvent(AsyncWebSocket *server,
                     // 色値を保存
                     ColorPreferences colorPreferences;
                     colorPreferences.saveColor(r, g, b);
-                    colorPreferences.saveSpeed(speed); // 速度を保存
+                    colorPreferences.saveSpeed(speed);
 
                     // LEDの色を設定
-                    mainController.setColor(r, g, b,
-                                            speed); // 速度を追加して渡す
+                    mainController.setColor(r, g, b, speed);
+                } else if (type == "brightnessCorrection") {
+                    JsonObject data = doc["data"];
+                    float redMax = data["redCorrection"];
+                    float greenMax = data["greenCorrection"];
+                    float blueMax = data["blueCorrection"];
+                    logMessage =
+                        "Brightness Correction - Red: " + String(redMax) +
+                        ", Green: " + String(greenMax) +
+                        ", Blue: " + String(blueMax) + "\r\n";
+                    Serial.print(logMessage);
+                    tcpServerHandler->sendLog(logMessage.c_str());
+
+                    // 輝度補正を保存
+                    ColorPreferences colorPreferences;
+                    colorPreferences.saveBrightnessCorrection(redMax, greenMax,
+                                                              blueMax);
+
+                    // 輝度補正を設定
+                    mainController.setBrightnessCorrection(redMax, greenMax,
+                                                           blueMax);
+
+                    // 補正値を更新した後に現在の色を再設定
+                    int r, g, b;
+                    float speed = colorPreferences.getSpeed();
+                    colorPreferences.getColor(r, g, b);
+                    mainController.setColor(r, g, b, speed);
                 }
             }
         }

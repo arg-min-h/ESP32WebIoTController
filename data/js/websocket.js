@@ -29,10 +29,17 @@ socket.onmessage = function (event) {
     var g = message.data.g;
     var b = message.data.b;
     speed = message.data.speed;
+    var redCorrection = message.data.redCorrection;
+    var greenCorrection = message.data.greenCorrection;
+    var blueCorrection = message.data.blueCorrection;
+
     document.getElementById("colorPicker").value = rgbToHex(r, g, b);
     document.getElementById("colorRGB").textContent = `RGB: (${r}, ${g}, ${b})`;
     document.getElementById("speedDropdown").value = speed;
     document.getElementById("speedValue").textContent = `速度: ${speed}`;
+    document.getElementById("redCorrection").value = redCorrection;
+    document.getElementById("greenCorrection").value = greenCorrection;
+    document.getElementById("blueCorrection").value = blueCorrection;
   }
 };
 
@@ -55,6 +62,29 @@ function updateSpeed() {
   speed = document.getElementById("speedDropdown").value;
   document.getElementById("speedValue").textContent = `速度: ${speed}`;
   sendColor(); // 色と共に速度を送信するために呼び出す
+}
+
+function sendBrightnessCorrection() {
+  var redCorrection = parseFloat(
+    document.getElementById("redCorrection").value,
+  );
+  var greenCorrection = parseFloat(
+    document.getElementById("greenCorrection").value,
+  );
+  var blueCorrection = parseFloat(
+    document.getElementById("blueCorrection").value,
+  );
+
+  var message = {
+    type: "brightnessCorrection",
+    data: {
+      redCorrection: redCorrection,
+      greenCorrection: greenCorrection,
+      blueCorrection: blueCorrection,
+    },
+  };
+  socket.send(JSON.stringify(message));
+  sendColor(); // 補正値を送信した後にLEDの色を再設定
 }
 
 function rgbToHex(r, g, b) {

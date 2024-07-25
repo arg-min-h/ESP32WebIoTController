@@ -1,42 +1,34 @@
 #include "MainController.h"
-#include "ColorPreferences.h" // ColorPreferencesをインクルード
+#include "ColorPreferences.h"
 
 MainController::MainController() : ledController() {}
 
 void MainController::setup() {
     Serial.begin(115200);
-    delay(1000); // シリアル通信の初期化待ち時間
+    delay(1000);
 
-    // SPIFFSのセットアップ
     if (!spiffsSetup.begin()) {
         return;
     }
 
-    // WiFiのセットアップ
     wifiSetup.begin(&tcpServerHandler);
-
-    // TCPサーバーのセットアップ
     tcpServerHandler.begin();
-
-    // OTAのセットアップ
     otaUpdate.begin(&tcpServerHandler);
-
-    // Webサーバーのセットアップ
     webServerSetup.begin(&tcpServerHandler);
-
-    // WebSocketのセットアップ
     webSocketHandler.begin(&webServerSetup.server, &tcpServerHandler);
-
-    // LEDコントローラの初期化
     ledController.begin();
 
-    // 初期色と速度を設定
     ColorPreferences colorPreferences;
     int r, g, b;
     float speed;
+    float redCorrection, greenCorrection, blueCorrection;
     colorPreferences.getColor(r, g, b);
     speed = colorPreferences.getSpeed();
+    colorPreferences.getBrightnessCorrection(redCorrection, greenCorrection,
+                                             blueCorrection);
     ledController.setColor(r, g, b, speed);
+    ledController.setBrightnessCorrection(redCorrection, greenCorrection,
+                                          blueCorrection);
 
     String logMessage = "Setup completed\r\n";
     Serial.print(logMessage);
@@ -44,15 +36,17 @@ void MainController::setup() {
 }
 
 void MainController::loop() {
-    otaUpdate.handle(); // OTAの処理
-    webSocketHandler
-        .cleanupClients(); // WebSocketのクライアントをクリーンアップ
-    tcpServerHandler.handleClient(); // TCPクライアントの処理
-    ledController.update();          // LEDの更新
+    otaUpdate.handle();
+    webSocketHandler.cleanupClients();
+    tcpServerHandler.handleClient();
+    ledController.update();
 }
 
 void MainController::setColor(int r, int g, int b, float speed) {
     ledController.setColor(r, g, b, speed);
-    ColorPreferences colorPreferences;
-    colorPreferences.saveSpeed(speed); // 速度を保存
+}
+
+void MainController::setBrightnessCorrection(float redMax, float greenMax,
+                                             float blueMax) {
+    ledController.setBrightnessCorrection(redMax, greenMax, blueMax);
 }

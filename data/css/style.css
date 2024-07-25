@@ -65,3 +65,28 @@ body.dark {
   background-color: #f0f0f0;
   text-align: center;
 }
+
+/* 輝度補正入力フィールドのスタイルを追加 */
+input[type="number"] {
+  display: block;
+  margin: 10px auto;
+  padding: 10px;
+  font-size: 16px;
+  width: 100px;
+  border-radius: 5px;
+  border: 1px solid #ddd;
+  background-color: var(--primary-background-color);
+  color: var(--primary-text-color);
+}
+
+/* ライトテーマの補正入力フィールド */
+body.light input[type="number"] {
+  background-color: #f0f0f0;
+  color: #000000;
+}
+
+/* ダークテーマの補正入力フィールド */
+body.dark input[type="number"] {
+  background-color: #333333;
+  color: #ffffff;
+}

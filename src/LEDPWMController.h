@@ -10,6 +10,8 @@ class LEDPWMController {
     void begin();
     void update();
     void setColor(float r, float g, float b, float speed);
+    void setBrightnessCorrection(float redMax, float greenMax,
+                                 float blueMax); // 最大輝度補正の設定メソッド
 
   private:
     unsigned long _lastUpdateTime;
@@ -19,6 +21,10 @@ class LEDPWMController {
     float _startR, _startG, _startB;
     float _transitionDuration;
     float _transitionSpeed;
+
+    float _redMax = 255.0;
+    float _greenMax = 255.0;
+    float _blueMax = 255.0;
 
     int _redPin, _greenPin, _bluePin;
 };
